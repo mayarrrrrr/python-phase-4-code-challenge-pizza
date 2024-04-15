@@ -68,9 +68,49 @@ class Pizzas(Resource):
     
 api.add_resource(Pizzas,"/pizzas")
 
-class RestaurantPizza(Resource):
+class RestaurantPizzas(Resource):
     def post(self):
         data = request.get_json()
+        
+        if not all(key in data for key in("price","pizza_id","restaurant_id")):
+            return make_response(jsonify({"error":"check on your keys"}))
+        
+        
+        
+        
+        # price = data['price']
+        pizza_id = data['pizza_id']
+        restaurant_id = data['restaurant_id']
+        
+        # check if pizza and restaurant exist in the db
+        pizza = Pizza.query.get(pizza_id)
+        restaurant = Restaurant.query.get(restaurant_id)
+        
+        if not pizza or not restaurant:
+            return make_response(jsonify({"errors": ["validation errors pizza and restaurant dont exist"]}), 400)
+        
+        # create a new restaurantpizza
+        restaurant_pizza = RestaurantPizza(
+            price = data['price'],
+            pizza_id = data['pizza_id'],
+            restaurant_id = data['restaurant_id']
+        )
+        
+        db.session.add(restaurant_pizza)
+        db.session.commit()
+        
+        # returning data related to restaurant_pizza
+        pizza_data = {
+            "id": pizza.id,
+            "name": pizza.name,
+            "ingredients": pizza.ingredients
+        }
+        
+        return make_response(jsonify(pizza_data),200)
+    
+api.add_resource(RestaurantPizzas,"/restaurant_pizzas")
+
+        
              
         
 
